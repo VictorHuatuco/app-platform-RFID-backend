@@ -40,4 +40,4 @@ videos/
 **/.env
 
 # Ignorar certs
-app/certs/
+certs/
