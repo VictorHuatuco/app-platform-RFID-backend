@@ -38,3 +38,6 @@ videos/
 
 # Ignorar .env
 **/.env
+
+# Ignorar entornos virtuales
+certs/
