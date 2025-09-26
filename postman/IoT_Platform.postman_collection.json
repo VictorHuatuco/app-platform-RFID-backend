@@ -1,0 +1,154 @@
+{
+  "info": {
+    "name": "IoT Platform API",
+    "_postman_id": "d4f7a4e3-6d0f-4c44-9f6c-000000000001",
+    "description": "Colección de pruebas para la API IoT con FastAPI y PostgreSQL",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Root",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": [""]
+        }
+      }
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/users/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["users", ""]
+            }
+          }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Juan Pérez\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/users/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["users", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Listar tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/tags/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["tags", ""]
+            }
+          }
+        },
+        {
+          "name": "Crear tag",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag_code\": \"192002151005102510\",\n  \"id_type_tag\": 1,\n  \"id_users\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/tags/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["tags", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bahías",
+      "item": [
+        {
+          "name": "Listar bahías",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/bahia/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["bahia", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alertas",
+      "item": [
+        {
+          "name": "Listar alertas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/alerts/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["alerts", ""]
+            }
+          }
+        },
+        {
+          "name": "Crear alerta",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Alerta de prueba\",\n  \"id_type_alert\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/alerts/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["alerts", ""]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,100 +1,125 @@
+# app/seed.py
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from app.database import SessionLocal
 from app import models
+from passlib.hash import bcrypt
+from datetime import datetime, timedelta
 
 def reset_sequences(db: Session):
-    db.execute(text("ALTER SEQUENCE terminals_id_seq RESTART WITH 1;"))
-    db.execute(text("ALTER SEQUENCE bus_companies_id_seq RESTART WITH 1;"))
-    db.execute(text("ALTER SEQUENCE destinations_id_seq RESTART WITH 1;"))
-    db.execute(text("ALTER SEQUENCE boarding_gates_id_seq RESTART WITH 1;"))
     db.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1;"))
-    db.execute(text("ALTER SEQUENCE travels_id_seq RESTART WITH 1;"))
-    db.execute(text("ALTER SEQUENCE announcements_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE type_tag_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE tags_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE headquarters_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE status_bahia_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE bahias_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE maintenance_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE people_in_maintenance_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE types_alerts_id_seq RESTART WITH 1;"))
+    db.execute(text("ALTER SEQUENCE alerts_id_seq RESTART WITH 1;"))
     db.commit()
+
 
 def seed_data(db: Session):
-    #Eliminar DAtos siu ya existe:
-    db.query(models.Announcements).delete()
-    db.query(models.Travels).delete()
-    db.query(models.Users).delete()
-    db.query(models.BoardingGates).delete()
-    db.query(models.Destinations).delete()
-    db.query(models.BusCompanies).delete()
-    db.query(models.Terminals).delete()
+    # -------------------
+    # ELIMINAR DATOS EXISTENTES
+    # -------------------
+    db.query(models.Alert).delete()
+    db.query(models.PeopleInMaintenance).delete()
+    db.query(models.Maintenance).delete()
+    db.query(models.Bahia).delete()
+    db.query(models.StatusBahia).delete()
+    db.query(models.Headquarters).delete()
+    db.query(models.Tag).delete()
+    db.query(models.TypeTag).delete()
+    db.query(models.TypeAlert).delete()
+    db.query(models.User).delete()
     db.commit()
 
-    # Resetear secuencias para que los IDs vuelvan a 1
     reset_sequences(db)
-    
-    # Crear terminales
-    terminal1 = models.Terminals(name="Terminal Central", city="Lima")
-    terminal2 = models.Terminals(name="Terminal Norte", city="Trujillo")
-    db.add_all([terminal1, terminal2])
+
+    # -------------------
+    # USERS
+    # -------------------
+    user1 = models.User(name="Victor", lastname="Huatuco", email="victor@example.com", job="Ingeniero IoT", password_hash=bcrypt.hash("123456"))
+    user2 = models.User(name="Francisco", lastname="Motta", email="francisco@example.com", job="Ingeniero De Mantenimiento", password_hash=bcrypt.hash("123456"))
+    db.add_all([user1, user2])
     db.commit()
 
-    # Crear empresas de buses
-    bus_company1 = models.BusCompanies(bus_company="Expreso Lima")
-    bus_company2 = models.BusCompanies(bus_company="Transportes Andinos")
-    bus_company3 = models.BusCompanies(bus_company="Perú Bus")
-    bus_company4 = models.BusCompanies(bus_company="Cruz del Sur")
-    bus_company5 = models.BusCompanies(bus_company="Ticllas")
-    bus_company6 = models.BusCompanies(bus_company="Oropesa")
-    db.add_all([bus_company1, bus_company2, bus_company3, bus_company4, bus_company5, bus_company6])
+    # -------------------
+    # TYPE_TAG
+    # -------------------
+    type_tag1 = models.TypeTag(name="CARD")
+    type_tag2 = models.TypeTag(name="LOTO")
+    db.add_all([type_tag1, type_tag2])
     db.commit()
 
-    # Crear destinos
-    destination1 = models.Destinations(destination="Arequipa")
-    destination2 = models.Destinations(destination="Cusco")
-    destination3 = models.Destinations(destination="Piura")
-    destination4 = models.Destinations(destination="Tacna")
-    destination5 = models.Destinations(destination="Chiclayo")
-    destination6 = models.Destinations(destination="Iquitos")
-    db.add_all([destination1, destination2, destination3, destination4, destination5, destination6])
+    # -------------------
+    # TAGS
+    # -------------------
+    tag1 = models.Tag(tag_code="192002151005102510", id_type_tag=type_tag1.id, id_users=user1.id)
+    tag2 = models.Tag(tag_code="192002151005102511", id_type_tag=type_tag2.id, id_users=user2.id)
+    db.add_all([tag1, tag2])
     db.commit()
 
-    # Crear puertas de embarque
-    gate1 = models.BoardingGates(boarding_gate="Puerta 1")
-    gate2 = models.BoardingGates(boarding_gate="Puerta 2")
-    gate3 = models.BoardingGates(boarding_gate="Puerta 3")
-    gate4 = models.BoardingGates(boarding_gate="Puerta 4")
-    gate5 = models.BoardingGates(boarding_gate="Puerta 5")
-    gate6 = models.BoardingGates(boarding_gate="Puerta 6")
-    db.add_all([gate1, gate2, gate3, gate4, gate5, gate6])
+    # -------------------
+    # HEADQUARTERS
+    # -------------------
+    hq1 = models.Headquarters(name="Mina Central")
+    hq2 = models.Headquarters(name="Planta Sur")
+    db.add_all([hq1, hq2])
     db.commit()
 
-    # Crear usuarios
-    user1 = models.Users(name="Juan Perez", email="juan@example.com", password="1234", id_terminals=terminal1.id)
-    user2 = models.Users(name="Maria López", email="maria@example.com", password="5678", id_terminals=terminal2.id)
-    user3 = models.Users(name="Carlos Ramos", email="carlos@example.com", password="abcd", id_terminals=terminal1.id)
-    user4 = models.Users(name="Lucia Torres", email="lucia@example.com", password="efgh", id_terminals=terminal2.id)
-    db.add_all([user1, user2, user3, user4])
+    # -------------------
+    # STATUS_BAHIA
+    # -------------------
+    status1 = models.StatusBahia(name="Disponible")
+    status2 = models.StatusBahia(name="En mantenimiento")
+    db.add_all([status1, status2])
     db.commit()
 
-    # Crear viajes
-    travel1 = models.Travels(id_bus_companies=bus_company1.id, id_destinations=destination1.id, departure_time="08:30:00", plate="ABC-123")
-    travel2 = models.Travels(id_bus_companies=bus_company2.id, id_destinations=destination2.id, departure_time="14:15:00", plate="XYZ-789")
-    travel3 = models.Travels(id_bus_companies=bus_company3.id, id_destinations=destination3.id, departure_time="10:15:00", plate="IBZ-243")
-    travel4 = models.Travels(id_bus_companies=bus_company4.id, id_destinations=destination4.id, departure_time="16:15:00", plate="ABC-123")
-    travel5 = models.Travels(id_bus_companies=bus_company5.id, id_destinations=destination5.id, departure_time="09:45:00", plate="DEF-456")
-    travel6 = models.Travels(id_bus_companies=bus_company6.id, id_destinations=destination6.id, departure_time="18:00:00", plate="GHI-789")
-    db.add_all([travel1, travel2, travel3, travel4, travel5, travel6])
+    # -------------------
+    # BAHIAS
+    # -------------------
+    bahia1 = models.Bahia(name="Bahía 1", id_status_bahia=status1.id, id_headquarters=hq1.id, module_loto_code = "LOTO-RFID-V1-A01")
+    bahia2 = models.Bahia(name="Bahía 2", id_status_bahia=status2.id, id_headquarters=hq1.id, module_loto_code = "LOTO-RFID-V1-A02")
+    bahia3 = models.Bahia(name="Bahía 3", id_status_bahia=status1.id, id_headquarters=hq1.id, module_loto_code = "LOTO-RFID-V1-A03")
+    bahia4 = models.Bahia(name="Bahía 4", id_status_bahia=status1.id, id_headquarters=hq1.id, module_loto_code = "LOTO-RFID-V1-A04")
+    bahia5 = models.Bahia(name="Bahía 5", id_status_bahia=status1.id, id_headquarters=hq1.id, module_loto_code = "LOTO-RFID-V1-A05")
+    bahia6 = models.Bahia(name="Bahía 6", id_status_bahia=status1.id, id_headquarters=hq1.id, module_loto_code = "LOTO-RFID-V1-A06")
+    db.add_all([bahia1, bahia2, bahia3, bahia4, bahia5, bahia6])
     db.commit()
 
+    # -------------------
+    # MAINTENANCE
+    # -------------------
+    maint1 = models.Maintenance(name="Cambio de motor", id_bahias=bahia1.id, start_time=datetime.now(), end_time=datetime.now() + timedelta(hours=2))
+    maint2 = models.Maintenance(name="Revisión de válvula", id_bahias=bahia2.id, start_time=datetime.now(), end_time=datetime.now() + timedelta(hours=3))
+    db.add_all([maint1, maint2])
+    db.commit()
 
-    # Crear anuncios
-    announcement1 = models.Announcements(id_travels=travel1.id, id_boarding_gates=gate1.id, id_users=user1.id, date_announcements="2025-03-12",status= False , observation="delayed")
-    announcement2 = models.Announcements(id_travels=travel2.id, id_boarding_gates= None, id_users=user2.id, date_announcements="2025-03-12",status= True , observation="canceled")
-    announcement3 = models.Announcements(id_travels=travel3.id, id_boarding_gates=gate3.id, id_users=user3.id, date_announcements="2025-03-14",status= True , observation="arrived")
-    announcement4 = models.Announcements(id_travels=travel4.id, id_boarding_gates=gate4.id, id_users=user4.id, date_announcements="2025-03-14",status= True , observation="delayed")
-    announcement5 = models.Announcements(id_travels=travel5.id, id_boarding_gates=gate5.id, id_users=user1.id, date_announcements="2025-03-15",status= True , observation="arrived")
-    announcement6 = models.Announcements(id_travels=travel6.id, id_boarding_gates= None, id_users=user2.id, date_announcements="2025-03-16",status= True , observation="canceled")
-    db.add_all([announcement1, announcement2, announcement3, announcement4, announcement5, announcement6])
+    # -------------------
+    # PEOPLE IN MAINTENANCE
+    # -------------------
+    pim1 = models.PeopleInMaintenance(id_users=user1.id, id_maintenance=maint1.id, entry_time=datetime.now())
+    pim2 = models.PeopleInMaintenance(id_users=user2.id, id_maintenance=maint2.id, entry_time=datetime.now())
+    db.add_all([pim1, pim2])
+    db.commit()
+
+    # -------------------
+    # TYPES_ALERTS
+    # -------------------
+    alert_type1 = models.TypeAlert(name="Acceso no autorizado")
+    alert_type2 = models.TypeAlert(name="Emergencia médica")
+    db.add_all([alert_type1, alert_type2])
+    db.commit()
+
+    # -------------------
+    # ALERTS
+    # -------------------
+    alert1 = models.Alert(alert_time=datetime.now().time(), id_maintenance=maint1.id, id_people_in_maintenance=pim1.id, id_types_alerts=alert_type1.id, resolved=False)
+    alert2 = models.Alert(alert_time=datetime.now().time(), id_maintenance=maint2.id, id_people_in_maintenance=pim2.id, id_types_alerts=alert_type2.id, resolved=True, resolved_at=datetime.now())
+    db.add_all([alert1, alert2])
     db.commit()
 
     print("✅ Seed completado con éxito.")
-
-if __name__ == "__main__":
-    db = SessionLocal()
-    seed_data(db)
-    db.close()

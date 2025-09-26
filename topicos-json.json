@@ -1,0 +1,60 @@
+TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/TAGS
+
+{
+  "module_loto_code": "LOTO-RFID-V1-A01",
+  "tags": {
+    "CARD": [
+      {
+        "tag_code": "192002151005102510",
+        "timestamp": "2025-09-07T12:34:56Z"
+      },
+      {
+        "tag_code": "192002151005102511",
+        "timestamp": "2025-09-07T12:34:56Z"
+      }
+    ],
+    "LOTO": [
+      {
+        "tag_code": "LOTO-0001-ABC123",
+        "timestamp": "2025-09-07T12:35:10Z"
+      }
+    ]
+  }
+}
+
+
+
+TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/STATUS
+{
+  "module_loto_code": "LOTO-RFID-V1-A01",
+  "status": "alert",
+  "alerts": [
+    {
+      "alert_code": "NO_LOTO",
+      "name": "Juan",
+      "lastname": "Pérez",
+      "message": "Ingresó sin colocar candado."
+    },
+    {
+      "alert_code": "NO_LOTO",
+      "name": "María",
+      "lastname": "García",
+      "message": "Ingresó sin colocar candado."
+    }
+  ]
+}
+
+TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/STATUS
+
+{
+  "module_loto_code": "LOTO-RFID-V1-A01",
+  "status": "ok",
+  "message": "Todos los trabajadores con candado validado."
+}
+
+
+TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/ONLINE
+{
+  "module_loto_code": "LOTO-RFID-V1-A01",
+  "status": "ONLINE"
+}

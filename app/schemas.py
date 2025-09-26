@@ -1,137 +1,181 @@
-from pydantic import BaseModel
-from datetime import date, time
-from typing import Literal, Optional
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from datetime import datetime, date, time, timedelta
 
-# BusCompany Schema
-class BusCompanyBase(BaseModel):
-    bus_company: str
-
-class BusCompanyCreate(BusCompanyBase):
-    pass
-
-class BusCompany(BusCompanyBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-# Destination Schema
-class DestinationBase(BaseModel):
-    destination: str
-
-class DestinationCreate(DestinationBase):
-    pass
-
-class Destination(DestinationBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-# BoardingGate Schema
-class BoardingGateBase(BaseModel):
-    boarding_gate: str
-
-class BoardingGateCreate(BoardingGateBase):
-    pass
-
-class BoardingGate(BoardingGateBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-# Travel Schema (Se define antes de Announcement)
-class TravelBase(BaseModel):
-    id_bus_companies: int
-    id_destinations: int
-    departure_time: time
-    plate: str
-
-class TravelCreate(TravelBase):
-    pass
-
-class TravelUpdate(BaseModel):
-    id_bus_companies: Optional[int] = None
-    id_destinations: Optional[int] = None
-    departure_time: Optional[time] = None
-    plate: Optional[str] = None
-
-class Travel(TravelBase):
-    id: int
-    bus_company: BusCompany  # Relación con BusCompany
-    destination: Destination  # Relación con Destination
-
-    class Config:
-        from_attributes = True
-
-# Announcement Schema
-class AnnouncementBase(BaseModel):
-    id_travels: int
-    id_boarding_gates: Optional[int]
-    id_users: int
-    date_announcements: date
-    status: bool
-    observation: Literal["delayed", "canceled", "arrived"]
-
-class AnnouncementCreate(AnnouncementBase):
-    pass
-
-class Announcement(AnnouncementBase):
-    id: int
-    travel: Travel
-    boarding_gate: Optional[BoardingGate]  
-
-    class Config:
-        from_attributes = True
-
-# User Schema
+# -------------------
+# USERS
+# -------------------
 class UserBase(BaseModel):
     name: str
-    email: str
-    password: str
-    id_terminals: int
+    lastname: str
+    email: EmailStr
+    job: Optional[str] = None
 
 class UserCreate(UserBase):
-    pass
+    password: str   # cuando se crea se envía en texto plano, luego se encripta
 
-class User(UserBase):
+class UserResponse(UserBase):
     id: int
-
-    class Config:
-        from_attributes = True
-
-# Terminal Schema
-class TerminalBase(BaseModel):
-    name: str
-    city: str
-
-class TerminalCreate(TerminalBase):
-    pass
-
-class Terminal(TerminalBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-# Schema para Video existente
-class VideoBase(BaseModel):
-    filename: str
-    title: Optional[str]
-    description: Optional[str]
-    order: int
-
-class VideoCreate(VideoBase):
-    pass
-
-class Video(VideoBase):
-    id: int
-
     class Config:
         orm_mode = True
 
-# Schema para actualizar el orden de un video
-class VideoOrderUpdate(BaseModel):
+
+# -------------------
+# TYPE_TAG
+# -------------------
+class TypeTagBase(BaseModel):
+    name: str
+
+class TypeTagCreate(TypeTagBase):
+    pass
+
+class TypeTagResponse(TypeTagBase):
     id: int
-    order: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# TAGS
+# -------------------
+class TagBase(BaseModel):
+    tag_code: str
+    id_type_tag: int
+    id_users: int
+
+class TagCreate(TagBase):
+    pass
+
+class TagResponse(TagBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# HEADQUARTERS
+# -------------------
+class HeadquartersBase(BaseModel):
+    name: str
+
+class HeadquartersCreate(HeadquartersBase):
+    pass
+
+class HeadquartersResponse(HeadquartersBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# STATUS_BAHIA
+# -------------------
+class StatusBahiaBase(BaseModel):
+    name: str
+
+class StatusBahiaCreate(StatusBahiaBase):
+    pass
+
+class StatusBahiaResponse(StatusBahiaBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# BAHIAS
+# -------------------
+class BahiaBase(BaseModel):
+    name: str
+    id_status_bahia: int
+    id_headquarters: int
+    module_loto_code: str | None = None
+    module_loto_status: str | None = "offline"
+
+class BahiaCreate(BahiaBase):
+    pass
+
+class BahiaResponse(BahiaBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# MAINTENANCE
+# -------------------
+class MaintenanceBase(BaseModel):
+    name: str
+    id_bahias: int
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None  
+
+class MaintenanceCreate(MaintenanceBase):
+    pass
+
+class MaintenanceResponse(MaintenanceBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# PEOPLE IN MAINTENANCE
+# -------------------
+class PeopleInMaintenanceBase(BaseModel):
+    id_users: int
+    id_maintenance: int
+    entry_time: Optional[datetime] = None
+    exit_time: Optional[timedelta] = None
+
+class PeopleInMaintenanceCreate(PeopleInMaintenanceBase):
+    pass
+
+class PeopleInMaintenanceResponse(PeopleInMaintenanceBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# TYPES_ALERTS
+# -------------------
+class TypeAlertBase(BaseModel):
+    name: str
+
+class TypeAlertCreate(TypeAlertBase):
+    pass
+
+class TypeAlertResponse(TypeAlertBase):
+    id: int
+    class Config:
+        orm_mode = True
+
+
+# -------------------
+# ALERTS
+# -------------------
+class AlertBase(BaseModel):
+    alert_time: time
+    id_maintenance: int
+    id_people_in_maintenance: int
+    id_types_alerts: int
+    resolved: Optional[bool] = False
+    resolved_at: Optional[datetime] = None
+
+class AlertCreate(AlertBase):
+    pass
+
+# Para actualizar
+class AlertUpdate(BaseModel):
+    alert_time: Optional[time] = None
+    id_maintenance: Optional[int] = None
+    id_people_in_maintenance: Optional[int] = None
+    id_types_alerts: Optional[int] = None
+    resolved: Optional[bool] = None
+    resolved_at: Optional[datetime] = None
+
+class AlertResponse(AlertBase):
+    id: int
+    class Config:
+        orm_mode = True
