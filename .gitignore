@@ -1,0 +1,40 @@
+# Ignorar entornos virtuales
+venv/
+env/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de logs
+*.log
+
+# Configuración de IDEs y editores de código
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Configuración del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de dependencias
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Archivos de bases de datos temporales
+*.sqlite3
+*.db
+!bdterminalpv.db
+
+# Configuración de Jupyter Notebook
+.ipynb_checkpoints/
+
+
+# Ignorar videos
+videos/
+
+# Ignorar .env
+**/.env
