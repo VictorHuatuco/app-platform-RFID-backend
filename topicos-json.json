@@ -1,4 +1,7 @@
-TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/TAGS
+TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/TAGS 
+// Json que envía el ESP32 con todos los tags
+//  LOTO son los tag de los candados de bloqueo
+//  CARD son los tag de los credenciales del personal
 
 {
   "module_loto_code": "LOTO-RFID-V1-A01",
@@ -25,7 +28,7 @@ TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/TAGS
 
 
 TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/STATUS
-{
+// Json de respuesta hacia el esp32 en caso de alerta en su bahía
   "module_loto_code": "LOTO-RFID-V1-A01",
   "status": "alert",
   "alerts": [
@@ -45,7 +48,7 @@ TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/STATUS
 }
 
 TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/STATUS
-
+// Json de respuesta hacia el esp32 en caso de no alerta en su bahía
 {
   "module_loto_code": "LOTO-RFID-V1-A01",
   "status": "ok",
@@ -54,6 +57,7 @@ TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/STATUS
 
 
 TOPIC: APP/LOTO_RFID/LOTO-RFID-V1-A01/ONLINE
+// Json del esp32 para informar que está online
 {
   "module_loto_code": "LOTO-RFID-V1-A01",
   "status": "ONLINE"

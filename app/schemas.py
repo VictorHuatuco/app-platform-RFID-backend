@@ -108,7 +108,8 @@ class MaintenanceBase(BaseModel):
     name: str
     id_bahias: int
     start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None  
+    end_time: Optional[datetime] = None
+    status: str  
 
 class MaintenanceCreate(MaintenanceBase):
     pass
@@ -126,7 +127,7 @@ class PeopleInMaintenanceBase(BaseModel):
     id_users: int
     id_maintenance: int
     entry_time: Optional[datetime] = None
-    exit_time: Optional[timedelta] = None
+    exit_time: Optional[datetime] = None
 
 class PeopleInMaintenanceCreate(PeopleInMaintenanceBase):
     pass
@@ -156,7 +157,7 @@ class TypeAlertResponse(TypeAlertBase):
 # ALERTS
 # -------------------
 class AlertBase(BaseModel):
-    alert_time: time
+    alert_time: datetime
     id_maintenance: int
     id_people_in_maintenance: int
     id_types_alerts: int

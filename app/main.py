@@ -10,7 +10,7 @@ from app.routers import (
     tags,
     headquarters,
     status_bahia,
-    bahia,
+    bahias,
     maintenance,
     people_in_maintenance,
     type_alerts,
@@ -41,7 +41,7 @@ app.include_router(type_tags.router)
 app.include_router(tags.router)
 app.include_router(headquarters.router)
 app.include_router(status_bahia.router)
-app.include_router(bahia.router)
+app.include_router(bahias.router)
 app.include_router(maintenance.router)
 app.include_router(people_in_maintenance.router)
 app.include_router(type_alerts.router)
@@ -57,7 +57,7 @@ mqtt_service = MqttService()
 # Evento al iniciar la aplicación
 @app.on_event("startup")
 def startup_event():
-    reset_database()
+    # reset_database() # Dejar solo en entorno de pruebas
     print("✅ Base de datos lista y tablas creadas/verificadas.")
 
     # Iniciar MQTT

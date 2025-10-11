@@ -1,3 +1,4 @@
+# app/mqtt/payloads.py
 from pydantic import BaseModel, Field
 from typing import List, Dict, Literal, Optional
 
@@ -10,13 +11,14 @@ class TagsPayload(BaseModel):
     tags: Dict[Literal["CARD","LOTO"], List[TagRead]]
 
 class StatusAlertItem(BaseModel):
+    alert_code: str = "NO_LOTO"   # por defecto
     name: str
     lastname: str
     message: str
 
 class StatusPayload(BaseModel):
     module_loto_code: str
-    status: Literal["ok", "alert", "error"]
+    status: str  # "ok", "alert", "error"
     alerts: Optional[List[StatusAlertItem]] = None
     message: Optional[str] = None
 

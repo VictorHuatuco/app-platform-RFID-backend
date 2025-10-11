@@ -116,6 +116,7 @@ class Maintenance(Base):
     id_bahias = Column(Integer, ForeignKey("bahias.id"))
     start_time = Column(TIMESTAMP, nullable=True)
     end_time = Column(TIMESTAMP, nullable=True)
+    status = Column(String(50), nullable=False, default="active")
 
     # relaciones
     bahia = relationship("Bahia", back_populates="maintenances")
@@ -165,7 +166,7 @@ class Alert(Base):
     __tablename__ = "alerts"
 
     id = Column(Integer, primary_key=True, index=True)
-    alert_time = Column(Time, nullable=True)
+    alert_time = Column(TIMESTAMP(timezone=True), nullable=True)
     id_maintenance = Column(Integer, ForeignKey("maintenance.id"))
     id_people_in_maintenance = Column(
         Integer, ForeignKey("people_in_maintenance.id")
