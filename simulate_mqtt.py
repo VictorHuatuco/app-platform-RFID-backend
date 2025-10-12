@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 # Cargar variables .env
 # -------------------------
 load_dotenv()
+MQTT_SIM_CLIENT_ID = os.getenv("MQTT_SIM_CLIENT_ID", "localhost")
 MQTT_HOST = os.getenv("MQTT_SIM_HOST", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_SIM_PORT", 1883))
 MQTT_USER = os.getenv("MQTT_SIM_USER", "")
@@ -165,12 +166,11 @@ def simulate_realistic(client, total_cycles=6):
     print("\n🛑 Simulación finalizada.")
 
 
-
 # -------------------------
 # MAIN
 # -------------------------
 if __name__ == "__main__":
-    client = mqtt.Client(client_id="loto-simulator", clean_session=True)
+    client = mqtt.Client(client_id=MQTT_SIM_CLIENT_ID, clean_session=True)
     client.on_connect = on_connect
     client.on_message = on_message
 

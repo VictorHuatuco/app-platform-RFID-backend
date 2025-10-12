@@ -2,17 +2,19 @@
 import json
 import threading
 import ssl
+import os
+from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from .config import MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_KEEPALIVE, MQTT_QOS, MQTT_CA_CERT
+from .config import MQTT_CLIENT_ID, MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD, MQTT_KEEPALIVE, MQTT_QOS, MQTT_CA_CERT
 from .topics import SUBSCRIBE_TAGS_ALL, SUBSCRIBE_LWT_ALL, SUBSCRIBE_ONLINE_ALL, extract_module_code, topic_status
 from .payloads import TagsPayload
 from .logic import process_tags_payload, process_lwt_message
 
 class MqttService:
     def __init__(self):
-        self.client = mqtt.Client(client_id="app-backend-subscriber", clean_session=True)
+        self.client = mqtt.Client(client_id=MQTT_CLIENT_ID, clean_session=True)
         MqttService.instance = self
         self._last_status: dict[str, str] = {}
         if MQTT_USER:
