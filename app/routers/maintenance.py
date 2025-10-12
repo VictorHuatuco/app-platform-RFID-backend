@@ -1,8 +1,10 @@
+# app/routers/maintenance.py
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from app import models
 from app.database import get_db
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 router = APIRouter(prefix="/api/maintenance", tags=["maintenance"])
@@ -14,13 +16,12 @@ def get_mantenimientos(
     bay_id: Optional[int] = Query(None, description="Filtra por ID de bahía"),
     start_date: Optional[str] = Query(None, description="Fecha inicial (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="Fecha final (YYYY-MM-DD)"),
-    status: Optional[str] = Query(None, description="Filtra por estado del mantenimiento (active o finished)")
 ):
     """
     Devuelve el historial de mantenimientos con posibilidad de filtrar por:
     - Bahía (`bay_id`)
     - Rango de fechas (`start_date`, `end_date`)
-    - Estado (`status` = active o finished)
+    Si no se encuentran resultados, devuelve un mensaje adecuado.
     """
     query = (
         db.query(models.Maintenance)
@@ -28,54 +29,58 @@ def get_mantenimientos(
         .order_by(models.Maintenance.start_time.desc())
     )
 
-    # ✅ Filtro por bahía
+    # ✅ Validar existencia de la bahía antes de filtrar
     if bay_id:
+        bahia_exists = db.query(models.Bahia).filter(models.Bahia.id == bay_id).first()
+        if not bahia_exists:
+            return {
+                "message": f"No existe una bahía con ID {bay_id}.",
+                "data": []
+            }
         query = query.filter(models.Maintenance.id_bahias == bay_id)
 
-    # ✅ Filtro por fechas
-    if start_date:
-        try:
+    # ✅ Filtro por rango de fechas
+    try:
+        if start_date:
             start_dt = datetime.strptime(start_date, "%Y-%m-%d")
             query = query.filter(models.Maintenance.start_time >= start_dt)
-        except ValueError:
-            return {"error": "Formato de start_date inválido. Usa YYYY-MM-DD"}
-
-    if end_date:
-        try:
-            end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+        if end_date:
+            end_dt = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
             query = query.filter(models.Maintenance.start_time <= end_dt)
-        except ValueError:
-            return {"error": "Formato de end_date inválido. Usa YYYY-MM-DD"}
+    except ValueError:
+        return {"message": "Formato de fecha inválido. Usa YYYY-MM-DD", "data": []}
 
-    # ✅ Filtro por estado
-    if status:
-        if status not in ["active", "finished"]:
-            return {"error": "El estado debe ser 'active' o 'finished'"}
-        query = query.filter(models.Maintenance.status == status)
 
     maintenances = query.all()
+
+    # ✅ Si no se encontraron mantenimientos
+    if not maintenances:
+        msg = "No se encontraron mantenimientos registrados."
+        if bay_id:
+            msg = f"No hay mantenimientos registrados para la bahía con ID {bay_id}."
+        if start_date or end_date:
+            msg += " No hay registros dentro del rango de fechas indicado."
+        return {"message": msg.strip(), "data": []}
 
     # Helper para formato de hora
     def fmt(dt):
         return dt.strftime("%H:%M:%S %d-%m-%Y") if dt else "-"
 
-    response = []
+    response_data = []
     for m in maintenances:
-        # Contar usuarios vinculados
         user_count = (
             db.query(models.PeopleInMaintenance)
             .filter(models.PeopleInMaintenance.id_maintenance == m.id)
             .count()
         )
 
-        # Verificar si tuvo alertas
         alerts_exist = (
             db.query(models.Alert)
             .filter(models.Alert.id_maintenance == m.id)
             .count()
         ) > 0
 
-        response.append({
+        response_data.append({
             "id": m.id,
             "bayName": m.bahia.name if m.bahia else "-",
             "maintenanceName": m.name or "-",
@@ -86,7 +91,10 @@ def get_mantenimientos(
             "alerts": "sí" if alerts_exist else "no",
         })
 
-    return response
+    return {
+        "message": f"Se encontraron {len(response_data)} mantenimiento(s).",
+        "data": response_data
+    }
 
 
 @router.get("/{maintenance_id}")
@@ -98,7 +106,6 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
     - lista de usuarios con su entry_time y exit_time
     - startTime, endTime, alertas
     """
-    # Buscar mantenimiento
     m = (
         db.query(models.Maintenance)
         .filter(models.Maintenance.id == maintenance_id)
@@ -108,11 +115,10 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
     if not m:
         return {"error": "Mantenimiento no encontrado"}
 
-    # Formateo de fecha
     def fmt(dt):
         return dt.strftime("%H:%M:%S %d-%m-%Y") if dt else "-"
 
-    # Buscar usuarios asociados al mantenimiento
+    # Usuarios del mantenimiento
     people_records = (
         db.query(models.PeopleInMaintenance, models.User)
         .join(models.User, models.User.id == models.PeopleInMaintenance.id_users)
@@ -149,6 +155,7 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
         "alerts": "Sí" if alerts_exist else "No",
     }
 
+
 # 1️⃣ Todos los mantenimientos:
 # GET /api/maintenance
 
@@ -158,8 +165,7 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
 # 3️⃣ Mantenimientos entre fechas:
 # GET /api/maintenance?start_date=2025-10-01&end_date=2025-10-11
 
-# 4️⃣ Solo activos:
-# GET /api/maintenance?status=active
-
-# 5️⃣ Combinado (bahía 1 y activos):
-# GET /api/maintenance?bay_id=1&status=active
+# 4️⃣ Combinado (bahía y fechas):
+# GET /api/maintenance?bay_id=1&start_date=2025-10-01&end_date=2025-10-11
+# GET /api/maintenance?bay_id=1&start_date=2025-10-01
+# GET /api/maintenance?bay_id=1&end_date=2025-10-01
