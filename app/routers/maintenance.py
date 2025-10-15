@@ -60,7 +60,7 @@ def get_mantenimientos(
             msg = f"No hay mantenimientos registrados para la bahía con ID {bay_id}."
         if start_date or end_date:
             msg += " No hay registros dentro del rango de fechas indicado."
-        return {"message": msg.strip(), "data": []}
+        return {"message": "empty", "data": []}
 
     # Helper para formato de hora
     def fmt(dt):
@@ -92,7 +92,7 @@ def get_mantenimientos(
         })
 
     return {
-        "message": f"Se encontraron {len(response_data)} mantenimiento(s).",
+        "message": "success",
         "data": response_data
     }
 
@@ -105,20 +105,24 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
     - número total de usuarios
     - lista de usuarios con su entry_time y exit_time
     - startTime, endTime, alertas
+    Devuelve {"message": "empty"} si no hay usuarios vinculados o el mantenimiento no existe.
     """
+    # 🔍 Buscar mantenimiento
     m = (
         db.query(models.Maintenance)
         .filter(models.Maintenance.id == maintenance_id)
         .join(models.Bahia, models.Bahia.id == models.Maintenance.id_bahias)
         .first()
     )
-    if not m:
-        return {"error": "Mantenimiento no encontrado"}
 
+    if not m:
+        return {"message": "not_found", "data": None}
+
+    # 🕒 Formato de fechas
     def fmt(dt):
         return dt.strftime("%H:%M:%S %d-%m-%Y") if dt else "-"
 
-    # Usuarios del mantenimiento
+    # 👥 Buscar usuarios del mantenimiento
     people_records = (
         db.query(models.PeopleInMaintenance, models.User)
         .join(models.User, models.User.id == models.PeopleInMaintenance.id_users)
@@ -126,24 +130,30 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
         .all()
     )
 
-    users_details = []
-    for pim, user in people_records:
-        users_details.append({
+    if not people_records:
+        return {"message": "empty", "data": None}
+
+    # 📋 Detalle de usuarios
+    users_details = [
+        {
             "name": user.name,
             "lastName": user.lastname,
             "email": user.email,
             "initTime": fmt(pim.entry_time),
             "endTime": fmt(pim.exit_time),
-        })
+        }
+        for pim, user in people_records
+    ]
 
-    # Verificar si hay alertas activas o históricas
+    # 🚨 Verificar si hay alertas activas o históricas
     alerts_exist = (
         db.query(models.Alert)
         .filter(models.Alert.id_maintenance == m.id)
         .count()
     ) > 0
 
-    return {
+    # 🧩 Construcción de la respuesta
+    data = {
         "id": m.id,
         "bayName": m.bahia.name if m.bahia else "-",
         "maintenanceName": m.name or "-",
@@ -154,6 +164,9 @@ def get_mantenimiento_detalle(maintenance_id: int, db: Session = Depends(get_db)
         "status": m.status,
         "alerts": "Sí" if alerts_exist else "No",
     }
+
+    return {"message": "success", "data": data}
+
 
 
 # 1️⃣ Todos los mantenimientos:

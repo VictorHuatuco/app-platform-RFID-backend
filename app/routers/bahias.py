@@ -1,6 +1,6 @@
 # app/api/bahias.py
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from app import models
 from app.database import get_db
@@ -17,8 +17,12 @@ def get_bahias(db: Session = Depends(get_db)):
     - inManteinance: mantenimiento activo
     - alert: alerta activa en el mantenimiento actual o último
     - moduleDisconnected: módulo offline
+    Devuelve {"message": "empty"} si no existen bahías registradas.
     """
     bahias = db.query(models.Bahia).all()
+
+    if not bahias:
+        return {"message": "empty", "data": []}
 
     response = []
     for b in bahias:
@@ -70,7 +74,18 @@ def get_bahias(db: Session = Depends(get_db)):
             "icon": icon
         })
 
-    return response
+    # --- Ordenar las bahías por número ---
+    def extract_bay_number(bay_name: str):
+        try:
+            # Extrae el número de "Bahía X"
+            return int(bay_name.split()[-1])
+        except (ValueError, IndexError):
+            return 9999  # fallback para nombres sin número
+
+    response_sorted = sorted(response, key=lambda x: extract_bay_number(x["name"]))
+
+    return {"message": "success", "data": response_sorted}
+
 
 
 @router.get("/{bahia_id}/maintenance")
@@ -78,11 +93,12 @@ def get_bahia_maintenance_details(bahia_id: int, db: Session = Depends(get_db)):
     """
     Devuelve la información del mantenimiento más reciente o activo de una bahía específica.
     Incluye los usuarios involucrados, sus tiempos de entrada/salida y si hubo alertas.
+    Si no hay mantenimientos, devuelve {"message": "empty"}.
     """
     # 1️⃣ Buscar la bahía
     bahia = db.query(models.Bahia).filter(models.Bahia.id == bahia_id).first()
     if not bahia:
-        raise HTTPException(status_code=404, detail="Bahía no encontrada")
+        return {"message": f"No existe una bahía con ID {bahia_id}", "data": None}
 
     # 2️⃣ Buscar mantenimiento activo o más reciente
     maintenance = (
@@ -93,7 +109,7 @@ def get_bahia_maintenance_details(bahia_id: int, db: Session = Depends(get_db)):
     )
 
     if not maintenance:
-        raise HTTPException(status_code=404, detail="No hay mantenimientos registrados para esta bahía")
+        return {"message": "empty", "data": None}
 
     # 3️⃣ Obtener personas en mantenimiento
     people = (
@@ -126,7 +142,7 @@ def get_bahia_maintenance_details(bahia_id: int, db: Session = Depends(get_db)):
         for p in people
     ]
 
-    response = {
+    data = {
         "id": maintenance.id,
         "bayName": bahia.name,
         "maintenanceName": maintenance.name or "-",
@@ -137,7 +153,8 @@ def get_bahia_maintenance_details(bahia_id: int, db: Session = Depends(get_db)):
         "alerts": "Sí" if alerts_exist else "No",
     }
 
-    return response
+    return {"message": "success", "data": data}
+
 
 
 
